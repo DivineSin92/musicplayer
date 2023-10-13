@@ -15,6 +15,21 @@ def add_song():
     song = song.replace('.mp3', '')
     song_box.insert(END, song)
 
+def add_songs():
+    songs = filedialog.askopenfilenames(initialdir='audio/', title = 'Choose a song', filetypes = (('mp3 Files', '*.mp3'), ))
+    for song in songs:
+        song = song.replace('F:/Programowanie/python/musicplayer/audio/', '')
+        song = song.replace('.mp3', '')
+        song_box.insert(END, song)
+
+def del_song():
+    song_box.delete(ANCHOR)
+    pygame.mixer.music.stop()
+
+def del_all_songs():
+    song_box.delete(0, END)
+    pygame.mixer.music.stop()
+
 def play():
     song = song_box.get(ACTIVE)
     song = f'F:/Programowanie/python/musicplayer/audio/{song}.mp3'
