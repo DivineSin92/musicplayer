@@ -5,7 +5,7 @@ from tkinter import filedialog
 root = Tk()
 root.title('MP3 Player')
 root.iconbitmap('images/icon.ico')
-root.geometry('450x300')
+root.geometry('300x450')
 
 pygame.mixer.init()
 
@@ -30,19 +30,57 @@ def del_all_songs():
     song_box.delete(0, END)
     pygame.mixer.music.stop()
 
+global paused
+paused = False
+
 def play():
+    global paused
+
     song = song_box.get(ACTIVE)
     song = f'F:/Programowanie/python/musicplayer/audio/{song}.mp3'
 
-    pygame.mixer.music.load(song)
-    pygame.mixer.music.play(loops = 0)
+    if paused:
+        pygame.mixer.music.unpause()
+        paused = False
+    else:
+        pygame.mixer.music.load(song)
+        pygame.mixer.music.play(loops = 0)
 
 def stop():
     pygame.mixer.music.stop()
     song_box.selection_clear(ACTIVE)
 
-song_box = Listbox(root, bg = 'black', fg = 'green', width = 60, selectbackground = 'gray', selectforeground = 'black')
-song_box.pack(pady = 20)
+def pause(is_paused):
+    global paused
+    paused = is_paused
+    
+    pygame.mixer.music.pause()
+    paused = True
+
+def next_song():
+    next_one = song_box.curselection()
+    next_one = next_one[0]+1
+    song = song_box.get(next_one)
+    song = f'F:/Programowanie/python/musicplayer/audio/{song}.mp3'
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play(loops = 0)
+    song_box.selection_clear(0, END)
+    song_box.activate(next_one)
+    song_box.select_set(next_one, last = None)
+
+def prev_song():
+    next_one = song_box.curselection()
+    next_one = next_one[0]-1
+    song = song_box.get(next_one)
+    song = f'F:/Programowanie/python/musicplayer/audio/{song}.mp3'
+    pygame.mixer.music.load(song)
+    pygame.mixer.music.play(loops = 0)
+    song_box.selection_clear(0, END)
+    song_box.activate(next_one)
+    song_box.select_set(next_one, last = None)
+
+song_box = Listbox(root, bg = 'black', fg = 'white', width = 47, height = 20, selectbackground = 'gray', selectforeground = 'black')
+song_box.pack(pady = 10)
 
 back_button_img = PhotoImage(file = 'images/Back.png')
 stop_button_img = PhotoImage(file = 'images/Stop.png')
@@ -53,24 +91,28 @@ forward_button_img = PhotoImage(file = 'images/Forward.png')
 controls_frame = Frame(root)
 controls_frame.pack()
 
-back_button = Button(controls_frame, image = back_button_img, borderwidth = 0)
+back_button = Button(controls_frame, image = back_button_img, borderwidth = 0, command = prev_song)
 stop_button = Button(controls_frame, image = stop_button_img, borderwidth = 0, command = stop)
 play_button = Button(controls_frame, image = play_button_img, borderwidth = 0, command = play)
-pause_button = Button(controls_frame, image = pause_button_img, borderwidth = 0)
-forward_button = Button(controls_frame, image = forward_button_img, borderwidth = 0)
+pause_button = Button(controls_frame, image = pause_button_img, borderwidth = 0, command = lambda: pause(paused))
+forward_button = Button(controls_frame, image = forward_button_img, borderwidth = 0, command = next_song)
 
-back_button.grid(row = 0, column = 0, padx = 10)
-stop_button.grid(row = 0, column = 1, padx = 10)
-play_button.grid(row = 0, column = 2, padx = 10)
-pause_button.grid(row = 0, column = 3, padx = 10)
-forward_button.grid(row = 0, column = 4, padx = 10)
+back_button.grid(row = 0, column = 0, padx = 2)
+stop_button.grid(row = 0, column = 1, padx = 2)
+play_button.grid(row = 0, column = 2, padx = 2)
+pause_button.grid(row = 0, column = 3, padx = 2)
+forward_button.grid(row = 0, column = 4, padx = 2)
 
 my_menu = Menu(root)
 root.config(menu = my_menu)
 
-add_song_menu = Menu(my_menu)
-my_menu.add_cascade(label = 'Add songs', menu = add_song_menu)
-add_song_menu.add_command(label = 'Add Song', command = add_song)
+music_menu = Menu(my_menu, tearoff = False)
+my_menu.add_cascade(label = 'Menu', menu = music_menu)
+music_menu.add_command(label = 'Add Song', command = add_song)
+music_menu.add_command(label = 'Add Songs', command = add_songs)
+music_menu.add_separator()
+music_menu.add_command(label = 'Del Selected Song', command = del_song)
+music_menu.add_command(label = 'Del All Songs', command = del_all_songs)
 
 
 root.mainloop()
