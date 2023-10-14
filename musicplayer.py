@@ -1,6 +1,8 @@
 from tkinter import *
 import pygame
 from tkinter import filedialog
+import time
+from mutagen.mp3 import MP3
 
 root = Tk()
 root.title('MP3 Player')
@@ -8,6 +10,17 @@ root.iconbitmap('images/icon.ico')
 root.geometry('300x450')
 
 pygame.mixer.init()
+
+def timer():
+    times = pygame.mixer.music.get_pos() / 1000
+    converted_time = time.strftime('%M:%S', time.gmtime(times))
+    song = song_box.get(ACTIVE)
+    song = f'F:/Programowanie/python/musicplayer/audio/{song}.mp3'
+    song_mut = MP3(song)
+    song_leng = song_mut.info.length
+    leng_time = time.strftime('%M:%S', time.gmtime(song_leng))
+    status_bar.config(text = f'{converted_time}/{leng_time}')
+    status_bar.after(1000, timer)
 
 def add_song():
     song = filedialog.askopenfilename(initialdir='audio/', title = 'Choose a song', filetypes = (('mp3 Files', '*.mp3'), ))
@@ -46,9 +59,12 @@ def play():
         pygame.mixer.music.load(song)
         pygame.mixer.music.play(loops = 0)
 
+    timer()
+
 def stop():
     pygame.mixer.music.stop()
     song_box.selection_clear(ACTIVE)
+    status_bar.config(text = '')
 
 def pause(is_paused):
     global paused
@@ -113,6 +129,9 @@ music_menu.add_command(label = 'Add Songs', command = add_songs)
 music_menu.add_separator()
 music_menu.add_command(label = 'Del Selected Song', command = del_song)
 music_menu.add_command(label = 'Del All Songs', command = del_all_songs)
+
+status_bar = Label(root, text = '', bd = 1, relief = GROOVE, anchor = E)
+status_bar.pack(fill = X, side = BOTTOM, ipady = 2)
 
 
 root.mainloop()
